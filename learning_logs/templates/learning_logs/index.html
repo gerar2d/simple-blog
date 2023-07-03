@@ -1,9 +1,14 @@
 {% extends "learning_logs/base.html" %}
 
-{% block content %}
+{% block page_header %}
+  
+<div class="jubatron">
+    <h1 class="display-3">Receitas</h1>
+    
+    <p class="lead">Livro de receitas virtual da familia.</p>
 
-<p>Learning Log</p>
+    <a class="btn btn-lg btn-primary" href="{% url 'users:register' %}"
+        role="button">Register &raquo;</a>
+</div>
 
-<p>Learning Log helps you keep track of your learning, for any topic you're learning about.</p>
-
-{% endblock content %}
+{% endblock page_header %}
