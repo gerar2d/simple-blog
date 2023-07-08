@@ -1,0 +1,35 @@
+{% extends "learning_logs/base.html" %}
+
+{% block title %} Profile {% endblock %}
+{% block add_blogs_active %} active {% endblock add_blogs_active %}
+
+{% block css %}
+{% endblock %}
+{% block content %}
+<form action="/add_blogs/" enctype="multipart/form-data" method="POST"> 
+    {% csrf_token %}
+<div class="container mt-4">
+{{ form.as_p }}
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="images" multiple>
+    <button>Upload</button>
+</form>
+<hr>
+{% for img in images %}
+<img src="{{img.images.url}}" alt="Image">
+{% endfor %}
+<button class="btn btn-primary">Add receita</button>
+</div>
+</form>
+{% endblock %}
+
+<script>
+    {% if alert %}
+    alert('Your Blog is added successfully.');
+    document.location = '/';
+    {% endif %}
+</script>
+
+
+

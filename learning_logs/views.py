@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Topic, Entry
-from .forms import TopicForm, EntryForm
+from .models import *
+from .forms import TopicForm, EntryForm, BlogPostForm
 from django.http import Http404
+from django.views.generic import UpdateView
+from .models import MultipleImage
+
 
 def index(request):
     """The home page for Learning Log."""
@@ -85,3 +88,63 @@ def edit_entry(request, entry_id):
         
     context = {'entry': entry, 'topic': topic, 'form': form}
     return render(request, 'learning_logs/edit_entry.html', context)
+
+def blogs(request):
+    posts = BlogPost.objects.all()
+    posts = BlogPost.objects.filter().order_by('-dateTime')
+    return render(request, "blog.html", {'posts':posts})
+
+def Delete_Blog_Post(request, slug):
+    posts = BlogPost.objects.get(slug=slug)
+    if request.method == "POST":
+        posts.delete()
+        return redirect('/')
+    return render(request, 'delete_blog_post.html', {'posts':posts})
+
+@login_required
+def add_blogs(request):
+    if request.method=="POST":
+        form = BlogPostForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            blogpost = form.save(commit=False)
+            blogpost.author = request.user
+            blogpost.save()
+            obj = form.instance
+            alert = True
+            return render(request, "add_blogs.html",{'obj':obj, 'alert':alert})
+    else:
+        form=BlogPostForm()
+    return render(request, "add_blogs.html", {'form':form})
+
+class UpdatePostView(UpdateView):
+    model = BlogPost
+    template_name = 'edit_blog_post.html'
+    fields = ['title', 'slug', 'content', 'image']
+
+
+def blogs_comments(request, slug):
+    post = BlogPost.objects.filter(slug=slug).first()
+    comments = Comment.objects.filter(blog=post)
+    if request.method=="POST":
+        user = request.user
+        content = request.POST.get('content','')
+        blog_id =request.POST.get('blog_id','')
+        comment = Comment(user = user, content = content, blog=post)
+        comment.save()
+    return render(request, "blog_comments.html", {'post':post, 'comments':comments})
+
+def search(request):
+    if request.method == "POST":
+        searched = request.POST['searched']
+        blogs = BlogPost.objects.filter(title__contains=searched)
+        return render(request, "search.html", {'searched':searched, 'blogs':blogs})
+    else:
+        return render(request, "search.html", {})
+    
+def upload(request):
+    if request.method == "POST":
+        images = request.FILES.getlist('images')
+        for image in images:
+            MultipleImage.objects.create(images=image)
+    images = MultipleImage.objects.all()
+    return render(request, 'index.html', {'images': images})
